@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Top Hotels — Crossword</title>
+<style>
+  :root{
+    --band:#cfe0f7; --band-txt:#1b2a3d; --active:#1668df; --line:#c9c9c9;
+    --num:#14213d; --blk:#333;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1c1c1c;background:#fff}
+  #app{display:flex;flex-direction:column;height:100vh;min-height:100%}
+  /* toolbar */
+  .topbar{display:flex;align-items:center;gap:20px;padding:12px 20px;border-bottom:1px solid #e6e6e6}
+  .hamb{background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;gap:4px}
+  .hamb span{display:block;width:22px;height:2px;background:#333;border-radius:2px}
+  .timer{font-variant-numeric:tabular-nums;color:#333;font-size:16px;min-width:48px}
+  .addp{background:none;border:none;cursor:pointer;color:#333;display:flex;align-items:center;padding:0}
+  .spacer{flex:1}
+  .tb-link{background:none;border:none;cursor:pointer;font-size:16px;color:#222;padding:4px 6px;display:flex;align-items:center}
+  .tb-link:hover{color:var(--active)}
+  .caret{font-size:10px;margin-left:5px;color:#555}
+  /* light-blue clue banner */
+  .cluebar{background:var(--band);padding:15px 20px;font-size:19px;color:var(--band-txt)}
+  .cluebar .num,.cluebar .dir{font-weight:600}
+  .cluebar .sep{margin:0 8px;opacity:.6}
+  /* main */
+  .main{flex:1;display:flex;gap:26px;padding:16px 20px 8px;overflow:hidden;min-height:0}
+  .gridwrap{display:flex;flex-direction:column;align-items:center}
+  .board{--n:15;border:1px solid #d0d0d0;display:grid;grid-template-columns:repeat(var(--n),var(--cell));grid-template-rows:repeat(var(--n),var(--cell));background:#d0d0d0;gap:1px}
+  .cell{position:relative;width:var(--cell);height:var(--cell);background:#fff;font-size:calc(var(--cell)*0.55);display:flex;align-items:center;justify-content:center;text-transform:uppercase;cursor:pointer;user-select:none;font-weight:600;color:#111}
+  .cell.block{background:var(--blk);cursor:default}
+  .cell .num{position:absolute;top:0px;left:2px;font-size:calc(var(--cell)*0.3);font-weight:600;color:var(--num);line-height:1.1}
+  .cell.hword{background:var(--band)}
+  .cell.hcell{background:var(--active);color:#fff}
+  .cell.hcell .num{color:#eaf1ff}
+  .cell.wrong::after{content:"";position:absolute;inset:0;background:linear-gradient(to top right,transparent 45%,#d61f1f 46%,#d61f1f 54%,transparent 55%)}
+  .cell.revealed{color:#2b6fd0}
+  .cell.hcell.revealed{color:#fff}
+  .caption{margin-top:12px;text-align:center;color:#333;font-size:14px}
+  .caption .t{font-style:italic}
+  .caption .p{margin-top:2px;font-size:13px;color:#444}
+  .caption .p a{color:var(--active);text-decoration:none}
+  /* stacked clue lists */
+  .clues{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+  .clist{flex:1;display:flex;flex-direction:column;min-height:0}
+  .clist+.clist{margin-top:8px}
+  .clist h3{margin:0 0 4px;font-size:17px;font-weight:800;letter-spacing:.02em;color:#111}
+  .clist .scroll{overflow-y:auto;padding-right:6px;flex:1}
+  .clist .scroll::-webkit-scrollbar{width:10px}
+  .clist .scroll::-webkit-scrollbar-thumb{background:#cfcfcf;border-radius:6px}
+  .clist .scroll::-webkit-scrollbar-track{background:#f2f2f2}
+  .clue{display:flex;gap:9px;padding:7px 10px;font-size:15px;cursor:pointer;line-height:1.3;border-radius:6px;border-left:3px solid transparent}
+  .clue .cn{font-weight:700;min-width:20px;text-align:right;color:#111}
+  .clue:hover{background:#f1f4f9}
+  .clue.cross{border-left:3px solid var(--active);background:#fff}
+  .clue.active{background:var(--band);border-left-color:transparent}
+  /* dropdown / modal */
+  .menu{position:absolute;top:112%;right:0;background:#fff;border:1px solid #dcdcdc;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:172px;z-index:40;padding:6px 0;display:none}
+  .menu.open{display:block}
+  .menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:10px 18px;font-size:15px;cursor:pointer;color:#222}
+  .menu button:hover{background:#eef3fb}
+  .overlay{position:fixed;inset:0;background:rgba(30,38,48,.45);display:none;align-items:center;justify-content:center;z-index:60}
+  .overlay.open{display:flex}
+  .modal{background:#fff;border-radius:12px;width:440px;max-width:92vw;max-height:88vh;overflow:auto;padding:22px 24px;box-shadow:0 22px 55px rgba(0,0,0,.3)}
+  .modal h2{margin:0 0 6px;font-size:21px;display:flex;justify-content:space-between;align-items:center}
+  .modal h2 .x{cursor:pointer;font-size:22px;color:#555;background:none;border:none}
+  .setrow{display:flex;justify-content:space-between;align-items:flex-start;padding:14px 0;border-bottom:1px solid #eee;gap:12px}
+  .setrow .lab b{display:block;font-size:15px}
+  .setrow .lab span{font-size:13px;color:#666}
+  .switch{position:relative;width:44px;height:24px;flex:none;margin-top:3px}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;inset:0;background:#ccc;border-radius:24px;transition:.2s;cursor:pointer}
+  .slider:before{content:"";position:absolute;height:18px;width:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+  .switch input:checked + .slider{background:var(--active)}
+  .switch input:checked + .slider:before{transform:translateX(20px)}
+  .optblock{padding:12px 0;border-bottom:1px solid #eee}
+  .optblock b{font-size:15px}
+  .optblock label{display:flex;align-items:center;gap:7px;font-size:14px;margin-top:6px;cursor:pointer}
+  .apply{margin-top:16px;text-align:right}
+  .apply button{background:var(--active);color:#fff;border:none;padding:9px 22px;border-radius:7px;font-size:15px;cursor:pointer}
+  .apply button:hover{filter:brightness(.94)}
+  body.dark{background:#1e1f22;color:#eee}
+  body.dark .cell{background:#2b2d31;color:#eee}
+  body.dark .cell.block{background:#111}
+  body.dark .cell.hword{background:#33507a}
+  body.dark .cell.hcell{background:var(--active);color:#fff}
+  body.dark .clist h3,body.dark .clue .cn{color:#eee}
+  body.dark .topbar,body.dark .main{background:#1e1f22}
+  #hiddenInput{position:absolute;opacity:0;pointer-events:none;height:0;width:0}
+  @media(max-width:720px){.main{flex-direction:column;overflow:auto}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <button class="hamb" title="Menu"><span></span><span></span><span></span></button>
+    <div class="timer" id="timer">00:00</div>
+    <button class="addp" title="Add player">
+      <svg width="28" height="22" viewBox="0 0 28 22" fill="none" stroke="#333" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="7" r="3.4"/><path d="M3 19c0-3.3 2.7-6 6-6s6 2.7 6 6"/>
+        <line x1="21" y1="7" x2="21" y2="14"/><line x1="17.5" y1="10.5" x2="24.5" y2="10.5"/>
+      </svg>
+    </button>
+    <div class="spacer"></div>
+    <div style="position:relative">
+      <button class="tb-link" id="assistBtn">Assist<span class="caret">&#9660;</span></button>
+      <div class="menu" id="assistMenu">
+        <button data-act="reveal-letter">Reveal letter</button>
+        <button data-act="reveal-word">Reveal word</button>
+        <button data-act="reveal-grid">Reveal grid</button>
+        <button data-act="check-letter">Check letter</button>
+        <button data-act="check-word">Check word</button>
+        <button data-act="check-grid">Check grid</button>
+      </div>
+    </div>
+    <button class="tb-link" id="printBtn">Print</button>
+    <button class="tb-link" id="settingsBtn">Settings</button>
+  </div>
+
+  <div class="cluebar" id="cluebar">
+    <span class="num">1</span> <span class="dir">ACROSS</span><span class="sep">&bull;</span><span class="txt">—</span>
+  </div>
+
+  <div class="main">
+    <div class="gridwrap">
+      <div class="board" id="board"></div>
+      <div class="caption">
+        <div class="t">Top Hotels</div>
+        <div class="p">Powered by <a href="#">NantGames&trade;</a></div>
+      </div>
+    </div>
+    <div class="clues">
+      <div class="clist"><h3>ACROSS</h3><div class="scroll" id="acrossList"></div></div>
+      <div class="clist"><h3>DOWN</h3><div class="scroll" id="downList"></div></div>
+    </div>
+  </div>
+</div>
+
+<input id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <h2>Settings <button class="x" id="closeSettings">&times;</button></h2>
+    <div class="setrow"><div class="lab"><b>Error check mode</b><span>Marks incorrect letters with a diagonal line</span></div>
+      <label class="switch"><input type="checkbox" id="setError"/><span class="slider"></span></label></div>
+    <div class="setrow"><div class="lab"><b>Show timer</b><span>Shows the timer while playing this puzzle</span></div>
+      <label class="switch"><input type="checkbox" id="setTimer" checked/><span class="slider"></span></label></div>
+    <div class="setrow"><div class="lab"><b>Sound</b><span>Control puzzle audio (if available) and multiplayer sounds</span></div>
+      <label class="switch"><input type="checkbox" id="setSound" checked/><span class="slider"></span></label></div>
+    <div class="setrow"><div class="lab"><b>Dark mode</b><span>Shows light text on dark background</span></div>
+      <label class="switch"><input type="checkbox" id="setDark"/><span class="slider"></span></label></div>
+    <div class="optblock"><b>After entering a letter</b>
+      <label><input type="checkbox" id="setSkip" checked/> Skip over filled letters</label></div>
+    <div class="optblock"><b>At the end of a word</b>
+      <label><input type="radio" name="eow" id="eowStay" checked/> Stay in current clue</label>
+      <label><input type="radio" name="eow" id="eowNext"/> Move to next clue</label></div>
+    <div class="optblock"><b>Use space key to</b>
+      <label><input type="radio" name="spc" id="spcToggle" checked/> Toggle clue direction</label>
+      <label><input type="radio" name="spc" id="spcClear"/> Clear the current box and move to the next</label></div>
+    <div class="apply"><button id="applySettings">Apply</button></div>
+  </div>
+</div>
+
+<script>
+const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", null, null, null, "I", null, null, null, "C"], [null, null, null, "O", null, null, null, "S", "I", "G", "N", null, null, null, "L"], [null, null, "T", "R", "A", "Y", null, null, null, null, "F", null, "G", null, "E"], ["R", null, null, "N", null, null, "R", null, "M", null, "I", null, "U", null, "R"], ["O", "B", "S", "E", "R", "V", "A", "T", "I", "O", "N", "D", "E", "C", "K"], ["O", null, null, "R", null, null, "T", null, "N", null, "I", null, "S", null, null], ["F", "E", "E", null, null, "W", "I", "F", "I", null, "T", null, "T", "U", "B"], ["T", null, null, null, "N", null, "N", null, "B", null, "Y", null, null, null, null], ["O", null, "M", null, "I", null, "G", null, "A", null, "P", "A", "T", "H", null], ["P", null, "E", null, "G", null, null, null, "R", null, "O", null, null, null, "H"], ["B", "E", "A", "C", "H", null, "L", null, null, "R", "O", "O", "M", null, "O"], ["A", null, "L", null, "T", null, "O", null, null, null, "L", null, null, null, "T"], ["R", null, null, null, null, null, "B", null, "B", null, "S", "U", "I", "T", "E"], ["S", "K", "Y", "L", "O", "B", "B", "I", "E", "S", null, null, "N", null, "L"], [null, null, null, null, null, null, "Y", null, "D", null, "K", "I", "N", "G", null]], "num": [[1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 4], [0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0], [0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0], [8, 0, 0, 0, 0, 0, 9, 0, 10, 0, 0, 0, 0, 0, 0], [11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [12, 0, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 14, 0, 0], [0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 18], [19, 0, 0, 0, 0, 0, 20, 0, 0, 21, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 22, 0, 23, 0, 24, 0, 0], [25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 0, 0, 0, 0]], "across": [{"num": 1, "row": 0, "col": 0, "answer": "CHECKIN", "clue": "Opposite of check out", "len": 7}, {"num": 5, "row": 1, "col": 7, "answer": "SIGN", "clue": "\u201cDo not disturb\u201d item", "len": 4}, {"num": 6, "row": 2, "col": 2, "answer": "TRAY", "clue": "Room-service vessel", "len": 4}, {"num": 11, "row": 4, "col": 0, "answer": "OBSERVATIONDECK", "clue": "High point of some luxury hotels", "len": 15}, {"num": 12, "row": 6, "col": 0, "answer": "FEE", "clue": "Hotel charge that may surprise travelers", "len": 3}, {"num": 13, "row": 6, "col": 5, "answer": "WIFI", "clue": "Free hotel perk, sometimes", "len": 4}, {"num": 14, "row": 6, "col": 12, "answer": "TUB", "clue": "Luxury bath feature", "len": 3}, {"num": 17, "row": 8, "col": 10, "answer": "PATH", "clue": "Resort walkway", "len": 4}, {"num": 19, "row": 10, "col": 0, "answer": "BEACH", "clue": "Resort destination feature", "len": 5}, {"num": 21, "row": 10, "col": 9, "answer": "ROOM", "clue": "Place to unpack", "len": 4}, {"num": 23, "row": 12, "col": 10, "answer": "SUITE", "clue": "Room with more space than standard", "len": 5}, {"num": 25, "row": 13, "col": 0, "answer": "SKYLOBBIES", "clue": "Upper-level check-in areas in some high-rise hotels", "len": 10}, {"num": 26, "row": 14, "col": 10, "answer": "KING", "clue": "Bed size", "len": 4}], "down": [{"num": 2, "row": 0, "col": 3, "answer": "CORNER", "clue": "Room with a better view, maybe", "len": 6}, {"num": 3, "row": 0, "col": 10, "answer": "INFINITYPOOLS", "clue": "Luxe hotel features with a vanishing-edge view", "len": 13}, {"num": 4, "row": 0, "col": 14, "answer": "CLERK", "clue": "Hotel worker at the front desk", "len": 5}, {"num": 7, "row": 2, "col": 12, "answer": "GUEST", "clue": "Person staying overnight", "len": 5}, {"num": 8, "row": 3, "col": 0, "answer": "ROOFTOPBARS", "clue": "Elevated places for cocktails", "len": 11}, {"num": 9, "row": 3, "col": 6, "answer": "RATING", "clue": "Traveler\u2019s online score", "len": 6}, {"num": 10, "row": 3, "col": 8, "answer": "MINIBAR", "clue": "Small fridge contents, often pricey", "len": 7}, {"num": 15, "row": 7, "col": 4, "answer": "NIGHT", "clue": "Hotel stay, casually", "len": 5}, {"num": 16, "row": 8, "col": 2, "answer": "MEAL", "clue": "Room-service request, maybe", "len": 4}, {"num": 18, "row": 9, "col": 14, "answer": "HOTEL", "clue": "Overnight option while traveling", "len": 5}, {"num": 20, "row": 10, "col": 6, "answer": "LOBBY", "clue": "Place to check in", "len": 5}, {"num": 22, "row": 12, "col": 8, "answer": "BED", "clue": "Place to sleep", "len": 3}, {"num": 24, "row": 12, "col": 12, "answer": "INN", "clue": "Small hotel, often", "len": 3}], "theme": ["OBSERVATIONDECK", "INFINITYPOOLS", "ROOFTOPBARS"]};
+</script>
+<script>
+(function(){
+  const P=PUZZLE, N=P.W, H=P.H;
+  const board=document.getElementById('board');
+  board.style.setProperty('--n',N);
+  function sizeCells(){
+    const avail=Math.min(window.innerWidth*0.5, window.innerHeight-220, 600);
+    const cell=Math.max(20, Math.floor(avail/N));
+    board.style.setProperty('--cell',cell+'px');
+  }
+  const cells={}, acrossOf={}, downOf={};
+  const key=(r,c)=>r+','+c;
+  P.across.forEach(s=>{s.dir='A';s.cells=[];for(let i=0;i<s.len;i++)s.cells.push(key(s.row,s.col+i));});
+  P.down.forEach(s=>{s.dir='D';s.cells=[];for(let i=0;i<s.len;i++)s.cells.push(key(s.row+i,s.col));});
+  P.across.forEach(s=>s.cells.forEach(k=>acrossOf[k]=s));
+  P.down.forEach(s=>s.cells.forEach(k=>downOf[k]=s));
+
+  for(let r=0;r<H;r++)for(let c=0;c<N;c++){
+    const el=document.createElement('div');
+    const letter=P.grid[r][c];
+    if(letter===null){el.className='cell block';board.appendChild(el);continue;}
+    el.className='cell';el.dataset.r=r;el.dataset.c=c;
+    const num=P.num[r][c];
+    if(num){const ns=document.createElement('span');ns.className='num';ns.textContent=num;el.appendChild(ns);}
+    const val=document.createElement('span');val.className='val';el.appendChild(val);
+    board.appendChild(el);
+    cells[key(r,c)]={el,val,r,c,sol:letter};
+    el.addEventListener('click',()=>onCellClick(r,c));
+  }
+
+  const aList=document.getElementById('acrossList'), dList=document.getElementById('downList');
+  function buildList(cont,slots){slots.forEach(s=>{
+    const d=document.createElement('div');d.className='clue';
+    d.innerHTML='<span class="cn">'+s.num+'</span><span>'+s.clue+'</span>';
+    d.addEventListener('click',()=>{selectSlot(s);focusCell(s.cells[0]);});
+    s._li=d;cont.appendChild(d);});}
+  buildList(aList,P.across);buildList(dList,P.down);
+
+  let cur=null,curDir='A',curKey=null;
+  const hidden=document.getElementById('hiddenInput');
+  const slotAt=(r,c,dir)=> dir==='A'?acrossOf[key(r,c)]:downOf[key(r,c)];
+  function selectSlot(s){cur=s;curDir=s.dir;render();}
+  function focusCell(k){curKey=k;render();hidden.focus({preventScroll:true});}
+  function onCellClick(r,c){
+    const k=key(r,c);
+    if(curKey===k){toggleDir();}
+    else{let s=slotAt(r,c,curDir)||slotAt(r,c,curDir==='A'?'D':'A');cur=s;curDir=s.dir;curKey=k;}
+    render();hidden.focus({preventScroll:true});
+  }
+  function toggleDir(){const [r,c]=curKey.split(',').map(Number);const o=curDir==='A'?'D':'A';const s=slotAt(r,c,o);if(s){curDir=o;cur=s;}}
+  function render(){
+    Object.values(cells).forEach(o=>o.el.classList.remove('hword','hcell'));
+    if(cur)cur.cells.forEach(k=>cells[k]&&cells[k].el.classList.add('hword'));
+    if(curKey&&cells[curKey]){cells[curKey].el.classList.remove('hword');cells[curKey].el.classList.add('hcell');}
+    const cb=document.getElementById('cluebar');
+    if(cur){cb.querySelector('.num').textContent=cur.num;cb.querySelector('.dir').textContent=cur.dir==='A'?'ACROSS':'DOWN';cb.querySelector('.txt').textContent=cur.clue;}
+    document.querySelectorAll('.clue').forEach(e=>e.classList.remove('active','cross'));
+    if(cur&&cur._li){cur._li.classList.add('active');if(cur._li.scrollIntoView)cur._li.scrollIntoView({block:'nearest'});}
+    // crossing clue accent (perpendicular slot at active cell)
+    if(curKey){const [r,c]=curKey.split(',').map(Number);const other=slotAt(r,c,curDir==='A'?'D':'A');if(other&&other._li&&other!==cur)other._li.classList.add('cross');}
+  }
+  function setLetter(k,ch){const o=cells[k];if(!o)return;o.val.textContent=ch;o.el.classList.remove('wrong','revealed');if(ch&&errorMode&&ch!==o.sol)o.el.classList.add('wrong');}
+  function advance(){
+    if(!cur||!curKey)return;
+    const idx=cur.cells.indexOf(curKey);let ni=idx+1;
+    if(skipFilled)while(ni<cur.cells.length&&cells[cur.cells[ni]].val.textContent)ni++;
+    if(ni<cur.cells.length)curKey=cur.cells[ni];
+    else{if(eowNext){const nx=nextSlot(cur);if(nx){cur=nx;curDir=nx.dir;curKey=nx.cells[0];}}else curKey=cur.cells[cur.cells.length-1];}
+    render();
+  }
+  function backspace(){if(!cur||!curKey)return;const o=cells[curKey];if(o.val.textContent)setLetter(curKey,'');else{const idx=cur.cells.indexOf(curKey);if(idx>0){curKey=cur.cells[idx-1];setLetter(curKey,'');}}render();}
+  function nextSlot(s,delta){delta=delta||1;const same=s.dir==='A'?P.across:P.down;const other=s.dir==='A'?P.down:P.across;const all=same.concat(other);const i=all.indexOf(s);return all[(i+delta+all.length)%all.length];}
+  function move(dr,dc){
+    if(!curKey)return;let [r,c]=curKey.split(',').map(Number);
+    const want=(dr!==0)?'D':'A';
+    if(want!==curDir){const s=slotAt(r,c,want);if(s){curDir=want;cur=s;render();return;}}
+    r+=dr;c+=dc;
+    while(r>=0&&r<H&&c>=0&&c<N){if(cells[key(r,c)]){curKey=key(r,c);const s=slotAt(r,c,curDir)||slotAt(r,c,curDir==='A'?'D':'A');if(s){cur=s;curDir=s.dir;}render();return;}r+=dr;c+=dc;}
+  }
+  hidden.addEventListener('keydown',e=>{
+    if(e.key==='Backspace'){e.preventDefault();backspace();return;}
+    if(e.key==='ArrowRight'){e.preventDefault();move(0,1);return;}
+    if(e.key==='ArrowLeft'){e.preventDefault();move(0,-1);return;}
+    if(e.key==='ArrowUp'){e.preventDefault();move(-1,0);return;}
+    if(e.key==='ArrowDown'){e.preventDefault();move(1,0);return;}
+    if(e.key===' '){e.preventDefault();if(spcClear){setLetter(curKey,'');advance();}else{toggleDir();render();}return;}
+    if(e.key==='Tab'){e.preventDefault();const nx=nextSlot(cur);if(nx){cur=nx;curDir=nx.dir;curKey=nx.cells[0];render();}return;}
+    if(/^[a-zA-Z]$/.test(e.key)){e.preventDefault();if(curKey){setLetter(curKey,e.key.toUpperCase());advance();checkWin();}}
+  });
+
+  const assistBtn=document.getElementById('assistBtn'),assistMenu=document.getElementById('assistMenu');
+  assistBtn.addEventListener('click',e=>{e.stopPropagation();assistMenu.classList.toggle('open');});
+  document.addEventListener('click',()=>assistMenu.classList.remove('open'));
+  assistMenu.addEventListener('click',e=>{const act=e.target.dataset.act;if(!act)return;assistMenu.classList.remove('open');
+    if(act==='reveal-letter')revealCells([curKey]);
+    if(act==='reveal-word'&&cur)revealCells(cur.cells);
+    if(act==='reveal-grid')revealCells(Object.keys(cells));
+    if(act==='check-letter')checkCells([curKey]);
+    if(act==='check-word'&&cur)checkCells(cur.cells);
+    if(act==='check-grid')checkCells(Object.keys(cells));
+    hidden.focus({preventScroll:true});});
+  function revealCells(keys){keys.forEach(k=>{const o=cells[k];if(!o)return;o.val.textContent=o.sol;o.el.classList.remove('wrong');o.el.classList.add('revealed');});checkWin();}
+  function checkCells(keys){keys.forEach(k=>{const o=cells[k];if(!o)return;const v=o.val.textContent;if(v){if(v!==o.sol)o.el.classList.add('wrong');else o.el.classList.remove('wrong');}});}
+
+  let errorMode=false,skipFilled=true,eowNext=false,spcClear=false,soundOn=true,timerVisible=true;
+  const ov=document.getElementById('settingsOverlay');
+  document.getElementById('settingsBtn').onclick=()=>ov.classList.add('open');
+  document.getElementById('closeSettings').onclick=()=>ov.classList.remove('open');
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.classList.remove('open');});
+  document.getElementById('applySettings').onclick=()=>{
+    errorMode=document.getElementById('setError').checked;
+    skipFilled=document.getElementById('setSkip').checked;
+    eowNext=document.getElementById('eowNext').checked;
+    spcClear=document.getElementById('spcClear').checked;
+    soundOn=document.getElementById('setSound').checked;
+    document.body.classList.toggle('dark',document.getElementById('setDark').checked);
+    timerVisible=document.getElementById('setTimer').checked;
+    document.getElementById('timer').style.visibility=timerVisible?'visible':'hidden';
+    Object.values(cells).forEach(o=>{o.el.classList.remove('wrong');if(errorMode&&o.val.textContent&&o.val.textContent!==o.sol)o.el.classList.add('wrong');});
+    ov.classList.remove('open');hidden.focus({preventScroll:true});
+  };
+  document.getElementById('printBtn').onclick=()=>window.print();
+  document.querySelector('.hamb').onclick=()=>{};
+
+  let secs=0;
+  setInterval(()=>{secs++;const m=String(Math.floor(secs/60)).padStart(2,'0');const s=String(secs%60).padStart(2,'0');if(timerVisible)document.getElementById('timer').textContent=m+':'+s;},1000);
+  function checkWin(){for(const k in cells)if(cells[k].val.textContent!==cells[k].sol)return;setTimeout(()=>alert('Solved! Nice work.'),120);}
+
+  window.addEventListener('resize',sizeCells);sizeCells();
+  selectSlot(P.across[0]);focusCell(P.across[0].cells[0]);
+})();
+</script>
+</body>
+</html>
