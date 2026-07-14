@@ -2,17 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
 <title>Top Hotels — Crossword</title>
 <style>
-  :root{
-    --band:#cfe0f7; --band-txt:#1b2a3d; --active:#1668df; --line:#c9c9c9;
-    --num:#14213d; --blk:#333;
-  }
+  :root{--band:#cfe0f7; --band-txt:#1b2a3d; --active:#1668df; --line:#d0d0d0; --num:#14213d; --blk:#333;}
   *{box-sizing:border-box}
   html,body{margin:0;padding:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1c1c1c;background:#fff}
   #app{display:flex;flex-direction:column;height:100vh;min-height:100%}
-  /* toolbar */
   .topbar{display:flex;align-items:center;gap:20px;padding:12px 20px;border-bottom:1px solid #e6e6e6}
   .hamb{background:none;border:none;cursor:pointer;padding:0;display:flex;flex-direction:column;gap:4px}
   .hamb span{display:block;width:22px;height:2px;background:#333;border-radius:2px}
@@ -22,11 +18,9 @@
   .tb-link{background:none;border:none;cursor:pointer;font-size:16px;color:#222;padding:4px 6px;display:flex;align-items:center}
   .tb-link:hover{color:var(--active)}
   .caret{font-size:10px;margin-left:5px;color:#555}
-  /* light-blue clue banner */
   .cluebar{background:var(--band);padding:15px 20px;font-size:19px;color:var(--band-txt)}
   .cluebar .num,.cluebar .dir{font-weight:600}
   .cluebar .sep{margin:0 8px;opacity:.6}
-  /* main */
   .main{flex:1;display:flex;gap:26px;padding:16px 20px 8px;overflow:hidden;min-height:0}
   .gridwrap{display:flex;flex-direction:column;align-items:center}
   .board{--n:15;border:1px solid #d0d0d0;display:grid;grid-template-columns:repeat(var(--n),var(--cell));grid-template-rows:repeat(var(--n),var(--cell));background:#d0d0d0;gap:1px}
@@ -43,7 +37,6 @@
   .caption .t{font-style:italic}
   .caption .p{margin-top:2px;font-size:13px;color:#444}
   .caption .p a{color:var(--active);text-decoration:none}
-  /* stacked clue lists */
   .clues{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
   .clist{flex:1;display:flex;flex-direction:column;min-height:0}
   .clist+.clist{margin-top:8px}
@@ -57,7 +50,6 @@
   .clue:hover{background:#f1f4f9}
   .clue.cross{border-left:3px solid var(--active);background:#fff}
   .clue.active{background:var(--band);border-left-color:transparent}
-  /* dropdown / modal */
   .menu{position:absolute;top:112%;right:0;background:#fff;border:1px solid #dcdcdc;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.18);min-width:172px;z-index:40;padding:6px 0;display:none}
   .menu.open{display:block}
   .menu button{display:block;width:100%;text-align:left;background:none;border:none;padding:10px 18px;font-size:15px;cursor:pointer;color:#222}
@@ -81,7 +73,6 @@
   .optblock label{display:flex;align-items:center;gap:7px;font-size:14px;margin-top:6px;cursor:pointer}
   .apply{margin-top:16px;text-align:right}
   .apply button{background:var(--active);color:#fff;border:none;padding:9px 22px;border-radius:7px;font-size:15px;cursor:pointer}
-  .apply button:hover{filter:brightness(.94)}
   body.dark{background:#1e1f22;color:#eee}
   body.dark .cell{background:#2b2d31;color:#eee}
   body.dark .cell.block{background:#111}
@@ -90,7 +81,26 @@
   body.dark .clist h3,body.dark .clue .cn{color:#eee}
   body.dark .topbar,body.dark .main{background:#1e1f22}
   #hiddenInput{position:absolute;opacity:0;pointer-events:none;height:0;width:0}
-  @media(max-width:720px){.main{flex-direction:column;overflow:auto}}
+  /* mobile dock + on-screen keyboard */
+  #mobiledock{display:none}
+  @media(max-width:720px){
+    .main{flex-direction:column;overflow:auto;padding:8px 8px 0}
+    .clues{display:none}
+    .cluebar{display:none}
+    .topbar{gap:14px;padding:10px 12px}
+    .topbar #printBtn{display:none}
+    .tb-link{font-size:15px}
+    .caption{margin:8px 0 4px}
+    #mobiledock{display:flex;flex-direction:column}
+    .mclue{background:var(--band);display:flex;align-items:center;gap:8px;padding:12px 8px;color:var(--band-txt)}
+    .mclue .marw{background:rgba(0,0,0,.06);border:none;font-size:22px;line-height:1;width:36px;height:36px;border-radius:50%;flex:none;color:#12233b;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .mclue #mClueTxt{flex:1;text-align:center;line-height:1.22;font-size:17px;font-weight:500}
+    #keyboard{background:#dbe1ea;padding:7px 4px 11px}
+    .kbrow{display:flex;justify-content:center;gap:6px;margin:5px 3px}
+    .kbkey{flex:1;max-width:40px;height:46px;background:#fff;border:none;border-radius:6px;box-shadow:0 1px 1px rgba(0,0,0,.28);font-size:19px;font-weight:500;color:#111;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .kbkey:active{background:#e7ebf1}
+    .kbkey.wide{max-width:58px;font-size:15px}
+  }
 </style>
 </head>
 <body>
@@ -137,6 +147,15 @@
       <div class="clist"><h3>DOWN</h3><div class="scroll" id="downList"></div></div>
     </div>
   </div>
+
+  <div id="mobiledock">
+    <div class="mclue">
+      <button class="marw" id="mPrev" title="Previous clue">&#8249;</button>
+      <span id="mClueTxt">—</span>
+      <button class="marw" id="mNext" title="Next clue">&#8250;</button>
+    </div>
+    <div id="keyboard"></div>
+  </div>
 </div>
 
 <input id="hiddenInput" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
@@ -172,9 +191,12 @@ const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", n
   const P=PUZZLE, N=P.W, H=P.H;
   const board=document.getElementById('board');
   board.style.setProperty('--n',N);
+  const isMobile=()=>(window.matchMedia?window.matchMedia('(max-width:720px)').matches:window.innerWidth<=720);
   function sizeCells(){
-    const avail=Math.min(window.innerWidth*0.5, window.innerHeight-220, 600);
-    const cell=Math.max(20, Math.floor(avail/N));
+    let avail;
+    if(isMobile()) avail=Math.min(window.innerWidth-18, window.innerHeight*0.52);
+    else avail=Math.min(window.innerWidth*0.5, window.innerHeight-220, 600);
+    const cell=Math.max(16, Math.floor(avail/N));
     board.style.setProperty('--cell',cell+'px');
   }
   const cells={}, acrossOf={}, downOf={};
@@ -207,14 +229,15 @@ const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", n
 
   let cur=null,curDir='A',curKey=null;
   const hidden=document.getElementById('hiddenInput');
+  const refocus=()=>{if(!isMobile())hidden.focus({preventScroll:true});};
   const slotAt=(r,c,dir)=> dir==='A'?acrossOf[key(r,c)]:downOf[key(r,c)];
   function selectSlot(s){cur=s;curDir=s.dir;render();}
-  function focusCell(k){curKey=k;render();hidden.focus({preventScroll:true});}
+  function focusCell(k){curKey=k;render();refocus();}
   function onCellClick(r,c){
     const k=key(r,c);
     if(curKey===k){toggleDir();}
     else{let s=slotAt(r,c,curDir)||slotAt(r,c,curDir==='A'?'D':'A');cur=s;curDir=s.dir;curKey=k;}
-    render();hidden.focus({preventScroll:true});
+    render();refocus();
   }
   function toggleDir(){const [r,c]=curKey.split(',').map(Number);const o=curDir==='A'?'D':'A';const s=slotAt(r,c,o);if(s){curDir=o;cur=s;}}
   function render(){
@@ -222,10 +245,9 @@ const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", n
     if(cur)cur.cells.forEach(k=>cells[k]&&cells[k].el.classList.add('hword'));
     if(curKey&&cells[curKey]){cells[curKey].el.classList.remove('hword');cells[curKey].el.classList.add('hcell');}
     const cb=document.getElementById('cluebar');
-    if(cur){cb.querySelector('.num').textContent=cur.num;cb.querySelector('.dir').textContent=cur.dir==='A'?'ACROSS':'DOWN';cb.querySelector('.txt').textContent=cur.clue;}
+    if(cur){cb.querySelector('.num').textContent=cur.num;cb.querySelector('.dir').textContent=cur.dir==='A'?'ACROSS':'DOWN';cb.querySelector('.txt').textContent=cur.clue;const mt=document.getElementById('mClueTxt');if(mt)mt.textContent=cur.clue;}
     document.querySelectorAll('.clue').forEach(e=>e.classList.remove('active','cross'));
     if(cur&&cur._li){cur._li.classList.add('active');if(cur._li.scrollIntoView)cur._li.scrollIntoView({block:'nearest'});}
-    // crossing clue accent (perpendicular slot at active cell)
     if(curKey){const [r,c]=curKey.split(',').map(Number);const other=slotAt(r,c,curDir==='A'?'D':'A');if(other&&other._li&&other!==cur)other._li.classList.add('cross');}
   }
   function setLetter(k,ch){const o=cells[k];if(!o)return;o.val.textContent=ch;o.el.classList.remove('wrong','revealed');if(ch&&errorMode&&ch!==o.sol)o.el.classList.add('wrong');}
@@ -246,16 +268,34 @@ const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", n
     r+=dr;c+=dc;
     while(r>=0&&r<H&&c>=0&&c<N){if(cells[key(r,c)]){curKey=key(r,c);const s=slotAt(r,c,curDir)||slotAt(r,c,curDir==='A'?'D':'A');if(s){cur=s;curDir=s.dir;}render();return;}r+=dr;c+=dc;}
   }
+  function handleKey(k){
+    if(k==='Backspace'){backspace();return;}
+    if(k==='ArrowRight'){move(0,1);return;}
+    if(k==='ArrowLeft'){move(0,-1);return;}
+    if(k==='ArrowUp'){move(-1,0);return;}
+    if(k==='ArrowDown'){move(1,0);return;}
+    if(k===' '){if(spcClear){setLetter(curKey,'');advance();}else{toggleDir();render();}return;}
+    if(k==='Tab'){const nx=nextSlot(cur);if(nx){cur=nx;curDir=nx.dir;curKey=nx.cells[0];render();}return;}
+    if(/^[a-zA-Z]$/.test(k)){if(curKey){setLetter(curKey,k.toUpperCase());advance();checkWin();}}
+  }
   hidden.addEventListener('keydown',e=>{
-    if(e.key==='Backspace'){e.preventDefault();backspace();return;}
-    if(e.key==='ArrowRight'){e.preventDefault();move(0,1);return;}
-    if(e.key==='ArrowLeft'){e.preventDefault();move(0,-1);return;}
-    if(e.key==='ArrowUp'){e.preventDefault();move(-1,0);return;}
-    if(e.key==='ArrowDown'){e.preventDefault();move(1,0);return;}
-    if(e.key===' '){e.preventDefault();if(spcClear){setLetter(curKey,'');advance();}else{toggleDir();render();}return;}
-    if(e.key==='Tab'){e.preventDefault();const nx=nextSlot(cur);if(nx){cur=nx;curDir=nx.dir;curKey=nx.cells[0];render();}return;}
-    if(/^[a-zA-Z]$/.test(e.key)){e.preventDefault();if(curKey){setLetter(curKey,e.key.toUpperCase());advance();checkWin();}}
+    const k=e.key;
+    if(['Backspace','ArrowRight','ArrowLeft','ArrowUp','ArrowDown',' ','Tab'].includes(k)||/^[a-zA-Z]$/.test(k)){e.preventDefault();handleKey(k);}
   });
+  // on-screen keyboard (mobile)
+  const DEL='⌫';
+  const kbRows=[['Q','W','E','R','T','Y','U','I','O','P'],['A','S','D','F','G','H','J','K','L'],['123','Z','X','C','V','B','N','M',DEL]];
+  const kb=document.getElementById('keyboard');
+  kbRows.forEach(row=>{const rd=document.createElement('div');rd.className='kbrow';
+    row.forEach(k=>{const b=document.createElement('button');b.className='kbkey';
+      if(k===DEL){b.classList.add('wide');b.innerHTML='&#9003;';}
+      else if(k==='123'){b.classList.add('wide');b.textContent='123';}
+      else b.textContent=k;
+      b.addEventListener('click',ev=>{ev.preventDefault();if(k===DEL)handleKey('Backspace');else if(k==='123'){}else handleKey(k);});
+      rd.appendChild(b);});
+    kb.appendChild(rd);});
+  document.getElementById('mPrev').onclick=()=>{if(cur){const st=nextSlot(cur,-1);cur=st;curDir=st.dir;curKey=st.cells[0];render();}};
+  document.getElementById('mNext').onclick=()=>{if(cur){const st=nextSlot(cur,1);cur=st;curDir=st.dir;curKey=st.cells[0];render();}};
 
   const assistBtn=document.getElementById('assistBtn'),assistMenu=document.getElementById('assistMenu');
   assistBtn.addEventListener('click',e=>{e.stopPropagation();assistMenu.classList.toggle('open');});
@@ -267,7 +307,7 @@ const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", n
     if(act==='check-letter')checkCells([curKey]);
     if(act==='check-word'&&cur)checkCells(cur.cells);
     if(act==='check-grid')checkCells(Object.keys(cells));
-    hidden.focus({preventScroll:true});});
+    refocus();});
   function revealCells(keys){keys.forEach(k=>{const o=cells[k];if(!o)return;o.val.textContent=o.sol;o.el.classList.remove('wrong');o.el.classList.add('revealed');});checkWin();}
   function checkCells(keys){keys.forEach(k=>{const o=cells[k];if(!o)return;const v=o.val.textContent;if(v){if(v!==o.sol)o.el.classList.add('wrong');else o.el.classList.remove('wrong');}});}
 
@@ -286,7 +326,7 @@ const PUZZLE = {"H": 15, "W": 15, "grid": [["C", "H", "E", "C", "K", "I", "N", n
     timerVisible=document.getElementById('setTimer').checked;
     document.getElementById('timer').style.visibility=timerVisible?'visible':'hidden';
     Object.values(cells).forEach(o=>{o.el.classList.remove('wrong');if(errorMode&&o.val.textContent&&o.val.textContent!==o.sol)o.el.classList.add('wrong');});
-    ov.classList.remove('open');hidden.focus({preventScroll:true});
+    ov.classList.remove('open');refocus();
   };
   document.getElementById('printBtn').onclick=()=>window.print();
   document.querySelector('.hamb').onclick=()=>{};
