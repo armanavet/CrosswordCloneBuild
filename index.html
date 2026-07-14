@@ -13,7 +13,12 @@
 <body>
   <h1>Test Clone Website</h1>
   <div class="embed">
-    <iframe height="700px" width="100%" allow="web-share; fullscreen" style="border:none; width: 100% !important; position: static;display: block !important; margin: 0 !important;" src="crossword.html" aria-label="NantGames Puzzle"> </iframe>
+    <iframe id="xw" height="700px" width="100%" allow="web-share; fullscreen" style="border:none; width: 100% !important; position: static;display: block !important; margin: 0 !important;" src="crossword.html" aria-label="NantGames Puzzle"> </iframe>
   </div>
+  <script>
+    // pass any ?p= / ?puzzle= param through to the embedded puzzle
+    var q = location.search;
+    if (q) document.getElementById('xw').src = 'crossword.html' + q;
+  </script>
 </body>
 </html>
