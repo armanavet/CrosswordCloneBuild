@@ -12,13 +12,20 @@
 </head>
 <body>
   <h1>Test Clone Website</h1>
+  <!-- "Make your own" link: hidden for now (kept in code). Editor is reachable via index.html?p=editor -->
+  <p id="makeOwnLink" style="display:none;text-align:center;margin:-6px 0 16px"><a href="index.html?p=editor" style="color:#1668df;text-decoration:none;font-size:15px">&#9998; Make your own crossword &rarr;</a></p>
   <div class="embed">
     <iframe id="xw" height="700px" width="100%" allow="web-share; fullscreen" style="border:none; width: 100% !important; position: static;display: block !important; margin: 0 !important;" src="crossword.html" aria-label="NantGames Puzzle"> </iframe>
   </div>
   <script>
-    // pass any ?p= / ?puzzle= param through to the embedded puzzle
-    var q = location.search;
-    if (q) document.getElementById('xw').src = 'crossword.html' + q;
+    // ?p=editor -> load the puzzle editor; any other ?p=/?puzzle= -> pass through to the player
+    var params = new URLSearchParams(location.search);
+    var iframe = document.getElementById('xw');
+    if (params.get('p') === 'editor') {
+      iframe.src = 'editor.html';
+    } else if (location.search) {
+      iframe.src = 'crossword.html' + location.search;
+    }
   </script>
 </body>
 </html>
